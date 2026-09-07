@@ -135,5 +135,5 @@ def check_class_balance(y):
 
 def get_cv_splitter(n_splits=5, random_state=42):
 
-    return StratifiedKFold(n_splits=n, shuffle=True, random_state=random_state)
+    return StratifiedKFold(n_splits=n_splits, shuffle=True, random_state=random_state)
         

@@ -75,4 +75,65 @@ def align_annotations_to_imu(imu_df, annotations_df):
 
 
 
+# Feature engineering
+# -----------------------
 
+ACCEL_COLS = ["accel_x", "accel_y", "accel_z"]
+GYRO_COLS = ["gyro_x", "gyro_y", "gyro_z"]
+
+
+def window_features(labelled_df, window_size_sec=1):
+
+    df = labelled_df.copy()
+    t0 = df["timestamp"].min()
+    df["window_id"] = ((df["timestamp"] - t0) // window_size_sec).astype(int)
+
+    rows = []
+    for window_id, window_df in df.groupby("window_id"):
+        features = {"window_id" : window_id}
+
+        for col in ACCEL_COLS + GYRO_COLS:
+            features[f"{col}_mean"] = window_df[col].mean()
+            features[f"{col}_min"] = window_df[col].min()
+            features[f"{col}_max"] = window_df[col].max()
+
+    # Signal Magnitude Area
+    features["accel_sma"] = window_df[ACCEL_COLS].abs.sum(axis=1).mean()
+    features["gyro_sma"] = window_df[GYRO_COLS].abs().sum(axis=1).mean()
+
+    # avg vector magnitude intensity
+    features["avg_intensity"] = np.sqrt(window_df[ACCEL_COLS].pow(2).sum(axis=1)).mean()
+
+    features["label"] = window_df["label"].mode().iloc[0]
+    rows.append(features)
+
+    return pd.DataFrame(rows)
+
+
+# Everyone should call this first sso we all use the same aligned and labelled features
+def get_features_and_labels(imu_path="a3_imu_data.csv", annotations_path="a3_activity_annotations.csv", window_size_sec=1):
+
+    imu_df = load_imu_data(imu_path)
+    annotations_df = load_annotations(annotations_path)
+    labelled_df = align_annotations_to_imu(imu_df, annotations_df)
+    feature_df = window_features(labelled_df, window_size_sec=window_size_sec)
+
+    x = feature_df.drop(columns=["window_id", "label"])
+    y = feature_df["label"]
+
+    return x, y
+
+
+def check_class_balance(y):
+    return y.value_counts()
+
+
+
+# Cross-validation
+# -------------------
+
+
+def get_cv_splitter(n_splits=5, random_state=42):
+
+    return StratifiedKFold(n_splits=n, shuffle=True, random_state=random_state)
+        

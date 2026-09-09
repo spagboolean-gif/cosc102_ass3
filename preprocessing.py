@@ -65,10 +65,11 @@ def to_physical_units(imu_df):
 def align_annotations_to_imu(imu_df, annotations_df):
 
     imu_df = imu_df.sort_values("timestamp").reset_index(drop=True)
+    imu_df["timestamp"] = imu_df["timestamp"].astype("float64")
     imu_start = imu_df["timestamp"].min()
 
     annotations_df = annotations_df.copy()
-    annotations_df["timestamp"] = imu_start + annotations_df["start_time_sec"]
+    annotations_df["timestamp"] = (imu_start + annotations_df["start_time_sec"]).astype("float64")
     annotations_df = annotations_df.sort_values("timestamp").reset_index(drop=True)
 
     return pd.merge_asof(imu_df, annotations_df[["timestamp", "label"]], on="timestamp", direction="backward")

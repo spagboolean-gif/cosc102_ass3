@@ -99,7 +99,7 @@ def window_features(labelled_df, window_size_sec=1):
             features[f"{col}_max"] = window_df[col].max()
 
     # Signal Magnitude Area
-    features["accel_sma"] = window_df[ACCEL_COLS].abs.sum(axis=1).mean()
+    features["accel_sma"] = window_df[ACCEL_COLS].abs().sum(axis=1).mean()
     features["gyro_sma"] = window_df[GYRO_COLS].abs().sum(axis=1).mean()
 
     # avg vector magnitude intensity

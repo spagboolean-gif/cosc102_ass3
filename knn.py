@@ -64,3 +64,15 @@ def train_knn(X, y, cv=None, param_grid=None):
         "best_score" : grid.best_score_,
         "grid" : grid,
     }
+
+
+def knn_summary(results, X, y):
+    print(f"Best parameters: {results['best_parameters']}")
+    print(f"Best CV accuracy: {results['best_score']:.3f}")
+    print()
+
+    y_prediction = results["best_estimator"].predict()
+    print("Clasification Report summary: ")
+    print(classification_report(y, y_prediction))
+    print("Confusion Matrix: ")
+    print(confusion_matrix(y, y_prediction))

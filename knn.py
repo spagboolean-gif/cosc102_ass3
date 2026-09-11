@@ -11,7 +11,7 @@ import numpy as np
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
-from sklearn.model_selection import GridSearchCV
+from sklearn.model_selection import GridSearchCV, cross_val_predict
 from sklearn.metrics import classification_report, confusion_matrix
 
 from preprocessing import get_features_and_labels, get_cv_splitter, check_class_balance
@@ -68,12 +68,16 @@ def train_knn(X, y, cv=None, param_grid=None):
     }
 
 
-def knn_summary(results, X, y):
+def knn_summary(results, X, y, cv=None):
     print(f"Best parameters: {results['best_parameters']}")
     print(f"Best CV accuracy: {results['best_score']:.3f}")
     print()
 
-    y_prediction = results["best_estimator"].predict()
+    
+    if cv is None:
+        cv=get_cv_splitter()
+
+    y_prediction = cross_val_predict(results["best_estimator"], X, y, cv=cv)
     print("Clasification Report summary: ")
     print(classification_report(y, y_prediction))
     print("Confusion Matrix: ")

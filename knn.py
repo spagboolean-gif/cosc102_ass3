@@ -39,7 +39,7 @@ def train_knn(X, y, cv=None, param_grid=None):
     cv = get_cv_splitter()
 
     param_grid = {
-        "knn_n_neighbors" : [3, 5, 7, 9, 11, 15],
+        "knn__n_neighbors" : [3, 5, 7, 9, 11, 15],
         "knn_weights" : ["uniform", "distance"],
     }
 

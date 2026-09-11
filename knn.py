@@ -42,7 +42,7 @@ def train_knn(X, y, cv=None, param_grid=None):
     if param_grid is None:
         param_grid = {
         "knn__n_neighbors" : [3, 5, 7, 9, 11, 15],
-        "knn_weights" : ["uniform", "distance"],
+        "knn__weights" : ["uniform", "distance"],
     }
 
     pipeline = Pipeline([

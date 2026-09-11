@@ -89,6 +89,7 @@ def window_features(labelled_df, window_size_sec=1):
     t0 = df["timestamp"].min()
     df["window_id"] = ((df["timestamp"] - t0) // window_size_sec).astype(int)
 
+
     rows = []
     for window_id, window_df in df.groupby("window_id"):
         features = {"window_id" : window_id}
@@ -98,15 +99,15 @@ def window_features(labelled_df, window_size_sec=1):
             features[f"{col}_min"] = window_df[col].min()
             features[f"{col}_max"] = window_df[col].max()
 
-    # Signal Magnitude Area
-    features["accel_sma"] = window_df[ACCEL_COLS].abs().sum(axis=1).mean()
-    features["gyro_sma"] = window_df[GYRO_COLS].abs().sum(axis=1).mean()
+        # Signal Magnitude Area
+        features["accel_sma"] = window_df[ACCEL_COLS].abs().sum(axis=1).mean()
+        features["gyro_sma"] = window_df[GYRO_COLS].abs().sum(axis=1).mean()
 
-    # avg vector magnitude intensity
-    features["avg_intensity"] = np.sqrt(window_df[ACCEL_COLS].pow(2).sum(axis=1)).mean()
+        # avg vector magnitude intensity
+        features["avg_intensity"] = np.sqrt(window_df[ACCEL_COLS].pow(2).sum(axis=1)).mean()
 
-    features["label"] = window_df["label"].mode().iloc[0]
-    rows.append(features)
+        features["label"] = window_df["label"].mode().iloc[0]
+        rows.append(features)
 
     return pd.DataFrame(rows)
 

@@ -134,7 +134,7 @@ def check_class_balance(y):
 # Cross-validation
 # -------------------
 
-
+# defining as a separate function so variables are adjusted globally to ensure identical data
 def get_cv_splitter(n_splits=5, random_state=42):
 
     return StratifiedKFold(n_splits=n_splits, shuffle=True, random_state=random_state)

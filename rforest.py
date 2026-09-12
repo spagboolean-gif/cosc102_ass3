@@ -68,8 +68,10 @@ def rforest_summary(results, X, y, cv=None):
         Confusion Matrix: \n\
         {confusion_matrix(y,y_prediction)}")
 
-x,y = get_features_and_labels()
+
+# commented out since they will be called in data_analysis.ipynb
+# x,y = get_features_and_labels()
 
 
-forestclf = train_rforest(x,y)
-rforest_summary(forestclf, x, y)
+#forestclf = train_rforest(x,y)
+#rforest_summary(forestclf, x, y)

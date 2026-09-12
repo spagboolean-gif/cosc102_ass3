@@ -98,4 +98,16 @@ def plot_grid_heatmap(grid, param1, param2, title, ax=None):
 
 
 def plot_hyperparameter_comparison(grid, param_name):
-    pass
+    """
+    Combine the hyperparameter tuning plots in one figure for comparison
+    line plot for knn 
+    heatmaps for svc and random forest
+    """
+    fig, axes = plt.subplots(1, 3, figsize=(20, 6))
+
+    plot_knn_curve(knn_grid, ax=axes[0])
+    plot_grid_heatmap(svc_grid, "svc__c", "svc__gamma", title="SVC (rbf kernel)", ax=axes[1])
+    plot_grid_heatmap(rforest_grid, "rforest__n_estimators", "rforest__max_leaf_nodes", title="Random Forest", ax=axes[2])
+
+    plt.tight_layout()
+    plt.show()

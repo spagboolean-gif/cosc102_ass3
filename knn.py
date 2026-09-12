@@ -82,3 +82,5 @@ def knn_summary(results, X, y, cv=None):
     print(classification_report(y, y_prediction))
     print("Confusion Matrix: ")
     print(confusion_matrix(y, y_prediction))
+
+    return y_prediction

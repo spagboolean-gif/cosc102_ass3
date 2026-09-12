@@ -1,5 +1,6 @@
-__pychache__
+__pycache__/
 *.pyc
 .ipynb_checkpoints/
+anaconda_projects/
 .venv/
 venv/

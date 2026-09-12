@@ -1,6 +1,4 @@
-"""
-Support Vector Classifier
-"""
+# Support Vector Classifier
 
 from sklearn.svm import SVC
 from sklearn.pipeline import Pipeline
@@ -11,87 +9,102 @@ from sklearn.metrics import classification_report, confusion_matrix
 from preprocessing import get_cv_splitter
 
 
-def train_svc(X, y, cv=None, param_grid=None):
+def create_svc():
     """
-    Train and tune the SVC model.
+    Create the SVC pipeline.
+
+    Returns:
+        Pipeline: StandardScaler followed by SVC model.
+    """
+    return Pipeline([("scaler", StandardScaler()), ("svc", SVC())])
+
+
+def train_svc(X, y, cv=None):
+    """
+    Train the SVC model using GridSearchCV.
 
     Params:
         X: Feature data.
         y: Activity labels.
         cv: Cross-validation splitter.
-        param_grid: Parameters used for GridSearchCV.
 
     Returns:
-        dict: Best model, parameters, score and GridSearchCV results.
+        GridSearchCV: Fitted grid search object.
     """
-
     if cv is None:
         cv = get_cv_splitter()
 
-    # Parameters for linear and rbf kernels
-    if param_grid is None:
-        param_grid = [
-            {
-                "svc__kernel": ["linear"],
-                "svc__C": [0.1, 1, 10, 100]
-            },
-            {
-                "svc__kernel": ["rbf"],
-                "svc__C": [0.1, 1, 10, 100],
-                "svc__gamma": ["scale", 0.001, 0.01, 0.1, 1]
-            }
-        ]
-
-    # Scale data before running SVC
-    svc_pipeline = Pipeline([
-        ("scaler", StandardScaler()),
-        ("svc", SVC())
-    ])
+    param_grid = [
+        {
+            "svc__kernel": ["linear"],
+            "svc__C": [0.1, 1, 10, 100]
+        },
+        {
+            "svc__kernel": ["rbf"],
+            "svc__C": [0.1, 1, 10, 100],
+            "svc__gamma": ["scale", 0.001, 0.01, 0.1, 1]
+        }
+    ]
 
     grid = GridSearchCV(
-        svc_pipeline,
-        param_grid,
+        estimator=create_svc(),
+        param_grid=param_grid,
         cv=cv,
         scoring="accuracy",
         n_jobs=1
     )
 
     grid.fit(X, y)
-
-    return {
-        "best_estimator": grid.best_estimator_,
-        "best_parameters": grid.best_params_,
-        "best_score": grid.best_score_,
-        "grid": grid
-    }
+    return grid
 
 
-def svc_summary(results, X, y, cv=None):
+def evaluate_svc(grid, X, y, cv=None):
     """
-    Print the results for the best SVC model.
+    Evaluate the best SVC model using cross-validated predictions.
 
     Params:
-        results (dict): Results returned from train_svc().
+        grid: Fitted GridSearchCV object from train_svc().
         X: Feature data.
         y: Activity labels.
         cv: Cross-validation splitter.
 
     Returns:
-        array: Predicted activity labels.
+        dict: Predictions, classification report and confusion matrix.
     """
-
     if cv is None:
         cv = get_cv_splitter()
 
-    print("Best parameters:", results["best_parameters"])
-    print(f"Best CV accuracy: {results['best_score']:.3f}")
+    predictions = cross_val_predict(grid.best_estimator_, X, y, cv=cv)
+    report = classification_report(y, predictions)
+    matrix = confusion_matrix(y, predictions)
+
+    print("Best parameters:", grid.best_params_)
+    print(f"Best CV accuracy: {grid.best_score_:.3f}")
     print()
-
-    predictions = cross_val_predict(results["best_estimator"], X, y, cv=cv)
-
     print("Classification Report:")
-    print(classification_report(y, predictions))
+    print(report)
     print("Confusion Matrix:")
-    print(confusion_matrix(y, predictions))
+    print(matrix)
 
-    return predictions
+    return {
+        "predictions": predictions,
+        "classification_report": report,
+        "confusion_matrix": matrix
+    }
+
+
+def run_svc(X, y, cv=None):
+    """
+    Train and evaluate the SVC model.
+
+    Params:
+        X: Feature data.
+        y: Activity labels.
+        cv: Cross-validation splitter.
+
+    Returns:
+        tuple: Fitted grid search and evaluation results.
+    """
+    grid = train_svc(X, y, cv)
+    results = evaluate_svc(grid, X, y, cv)
+    return grid, results

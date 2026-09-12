@@ -78,9 +78,16 @@ def knn_summary(results, X, y, cv=None):
         cv=get_cv_splitter()
 
     y_prediction = cross_val_predict(results["best_estimator"], X, y, cv=cv)
+    report = classification_report(y, y_prediction)
+    matrix = confusion_matrix(y, y_prediction)
+
     print("Clasification Report summary: ")
     print(classification_report(y, y_prediction))
     print("Confusion Matrix: ")
     print(confusion_matrix(y, y_prediction))
 
-    return y_prediction
+    return {
+        "predictions": y_prediction,
+        "classification_report": report,
+        "confusion_matrix": matrix,
+    }

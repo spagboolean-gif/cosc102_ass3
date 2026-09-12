@@ -48,7 +48,7 @@ def plot_knn_curve(grid, param_name="knn__n_neighbors", ax=None):
 
     results = grid.cv_results_
     df = pd.DataFrame({
-        param_name: [p[param_name] for p in results["parameters"]],
+        param_name: [p[param_name] for p in results["params"]],
         "score": results["mean_test_score"],
     })
 
@@ -74,8 +74,8 @@ def plot_grid_heatmap(grid, param1, param2, title, ax=None):
 
     results = grid.cv_results_
     df = pd.DataFrame({
-        param1: [p.get(param1) for p in results["parameters"]],
-        param2: [p.get(param2) for p in results["parameters"]],
+        param1: [p.get(param1) for p in results["params"]],
+        param2: [p.get(param2) for p in results["params"]],
         "score": results["mean_test_score"],
     }).dropna()
 
@@ -97,7 +97,7 @@ def plot_grid_heatmap(grid, param1, param2, title, ax=None):
                 ax.text(j, i, f"{val: .2f}", ha="center", va="center", color="white")
 
 
-def plot_hyperparameter_comparison(grid, param_name):
+def plot_hyperparameter_comparison(knn_grid, svc_grid, rforest_grid):
     """
     Combine the hyperparameter tuning plots in one figure for comparison
     line plot for knn 
@@ -106,7 +106,7 @@ def plot_hyperparameter_comparison(grid, param_name):
     fig, axes = plt.subplots(1, 3, figsize=(20, 6))
 
     plot_knn_curve(knn_grid, ax=axes[0])
-    plot_grid_heatmap(svc_grid, "svc__c", "svc__gamma", title="SVC (rbf kernel)", ax=axes[1])
+    plot_grid_heatmap(svc_grid, "svc__C", "svc__gamma", title="SVC (rbf kernel)", ax=axes[1])
     plot_grid_heatmap(rforest_grid, "rforest__n_estimators", "rforest__max_leaf_nodes", title="Random Forest", ax=axes[2])
 
     plt.tight_layout()

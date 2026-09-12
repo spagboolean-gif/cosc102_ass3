@@ -64,10 +64,18 @@ def rforest_summary(results, X, y, cv=None):
         cv=get_cv_splitter()
 
     y_prediction = cross_val_predict(results["best_estimator"], X, y, cv=cv)
+    report = classification_report(y, y_prediction)
+    matrix = confusion_matrix(y, y_prediction)
+
     print(f"Classification Report Summary: \n{classification_report(y,y_prediction)}\n\
         Confusion Matrix: \n\
         {confusion_matrix(y,y_prediction)}")
 
+    return {
+        "predictions": y_prediction,
+        "classification_report": report,
+        "confusion_matrix": matrix,
+    }
 
 # commented out since they will be called in data_analysis.ipynb
 # x,y = get_features_and_labels()

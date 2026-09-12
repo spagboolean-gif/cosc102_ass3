@@ -5,8 +5,8 @@ used by: data_analysis.ipynb
 uses data output from models defined in knn.py, svc.py and rforest.py
 
 """
-
-
+import numpy as np
+import pandas as pd
 from sklearn.metrics import ConfusionMatrixDisplay
 import matplotlib.pyplot as plt
 
@@ -36,6 +36,15 @@ def  plot_confusion_matrix_comparison(predictions_by_model, y_true, labels):
 
 
 def plot_knn_curve(grid, param_name="knn__n_neighbors", ax=None):
+    """
+    plot of mean cv accuracy against a single tuned K-NN hyperparameter
+
+    Parameters:
+    grid: fitted GridSearchCV object (from knn_results["grid"])
+    param_name: the parameter name to plot
+    ax: matplotlib Axes, to be combined in plot_hyperparameter_comparison()
+
+    """
 
     results = grid.cv_results_
     df = pd.DataFrame({
@@ -50,6 +59,42 @@ def plot_knn_curve(grid, param_name="knn__n_neighbors", ax=None):
     ax.set_ylabel("Mean CV accuracy")
     ax.set_title("K-NN")
 
+
+
+def plot_grid_heatmap(grid, param1, param2, title, ax=None):
+    """
+    Heatmap of mean cv accuracy across two tuned hyperparameters
+
+    Parameters:
+    grid: fitted GridSearchCV object
+    param1, param2: parameter names for heatmap rows/columns
+    title: subplot title
+    ax: matplotlib Axes, to be combines in plot_hyperparameter_comparison
+    """
+
+    results = grid.cv_results_
+    df = pd.DataFrame({
+        param1: [p.get(param1) for p in results["parameters"]],
+        param2: [p.get(param2) for p in results["parameters"]],
+        "score": results["mean_test_score"],
+    }).dropna()
+
+    pivot = df.pivot(index=param1, columns=param2, values="score")
+    im = ax.imshow(pivot.values, cmap="plasma", aspect="auto")
+    ax.set_xticks(range(len(pivot.columns)))
+    ax.set_xticklabels(pivot.columns, rotation=45)
+    ax.set_yticks(range(len(pivot.index)))
+    ax.set_yticklabels(pivot.index)
+    ax.set_xlabel(param2.split("__")[-1])
+    ax.set_ylabel(param1.split("__")[-1])
+    ax.set_title(title)
+
+    #annotate each cell with its score : this seems a retarded way to do this but idk how else and it works so its fine I guess
+    for i in range(len(pivot.index)):
+        for j in range(len(pivot.columns)):
+            val = pivot.values[i, j]
+            if not np.isnan(val):
+                ax.text(j, i, f"{val: .2f}", ha="center", va="center", color="white")
 
 
 def plot_hyperparameter_comparison(grid, param_name):

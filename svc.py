@@ -1,4 +1,10 @@
-# Support Vector Classifier
+"""
+Support Vector Classifier for activity classification.
+
+This file contains the SVC model used in data_analysis.ipynb.
+Feature data and shared Stratified K-Fold splitter are provided
+by preprocessing.py.
+"""
 
 from sklearn.svm import SVC
 from sklearn.pipeline import Pipeline
@@ -11,25 +17,26 @@ from preprocessing import get_cv_splitter
 
 def create_svc():
     """
-    Create the SVC pipeline.
+    Create preprocessing and classification pipeline for SVC.
 
     Returns:
-        Pipeline: StandardScaler followed by SVC model.
+        Pipeline: pipeline containing StandardScaler and SVC.
     """
     return Pipeline([("scaler", StandardScaler()), ("svc", SVC())])
 
 
 def train_svc(X, y, cv=None):
     """
-    Train the SVC model using GridSearchCV.
+    Train the SVC model and select the best hyperparameters.
 
     Params:
-        X: Feature data.
-        y: Activity labels.
-        cv: Cross-validation splitter.
+        X: Feature matrix produced by preprocessing.py.
+        y: Activity labels corresponding to the feature matrix.
+        cv: Cross-validation splitter (if None, get_cv_splitter() 
+            from preprocessing.py is used).
 
     Returns:
-        GridSearchCV: Fitted grid search object.
+        GridSearchCV: Trained grid search with the best SVC parameters.
     """
     if cv is None:
         cv = get_cv_splitter()
@@ -64,9 +71,10 @@ def evaluate_svc(grid, X, y, cv=None):
 
     Params:
         grid: Fitted GridSearchCV object from train_svc().
-        X: Feature data.
-        y: Activity labels.
-        cv: Cross-validation splitter.
+        X: Feature matrix produced by preprocessing.py.
+        y: Activity labels corresponding to the feature matrix.
+        cv: Cross-validation splitter (if None, get_cv_splitter() 
+            from preprocessing.py is used).
 
     Returns:
         dict: Predictions, classification report and confusion matrix.
@@ -79,8 +87,7 @@ def evaluate_svc(grid, X, y, cv=None):
     matrix = confusion_matrix(y, predictions)
 
     print("Best parameters:", grid.best_params_)
-    print(f"Best CV accuracy: {grid.best_score_:.3f}")
-    print()
+    print(f"Best CV accuracy: {grid.best_score_:.3f}\n")
     print("Classification Report:")
     print(report)
     print("Confusion Matrix:")
@@ -95,15 +102,20 @@ def evaluate_svc(grid, X, y, cv=None):
 
 def run_svc(X, y, cv=None):
     """
-    Train and evaluate the SVC model.
+    Run the complete SVC training and evaluation process.
+
+    This function combines model training, hyperparameter selection
+    and evaluation so the full SVC workflow can be called from
+    data_analysis.ipynb file.
 
     Params:
-        X: Feature data.
+        X: Feature matrix produced by preprocessing.py.
         y: Activity labels.
-        cv: Cross-validation splitter.
+        cv: Cross-validation splitter (if None, get_cv_splitter() 
+            from preprocessing.py is used).
 
     Returns:
-        tuple: Fitted grid search and evaluation results.
+        tuple: Fitted GridSearchCV object and evaluation results.
     """
     grid = train_svc(X, y, cv)
     results = evaluate_svc(grid, X, y, cv)

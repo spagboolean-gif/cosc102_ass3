@@ -12,16 +12,6 @@ import matplotlib.pyplot as plt
 
 
 
-#def plot_confusion_matrix(y_true, y_pred, labels, title):
-#    fig, ax = plt.subplots(figsize=(6, 6))
-#    ConfusionMatrixDisplay.from_predictions(
-#        y_true, y_pred, labels=labels, cmap=plt.cm.Blues, ax=ax,
-#        xticks_rotation=45
-#    )
-#    ax.set_title(title)
-#    plt.show()
-
-
 def  plot_confusion_matrix_comparison(predictions_by_model, y_true, labels):
     """
     plot confusion matrices for each algorithm and present them side by side for comparison.
@@ -43,3 +33,24 @@ def  plot_confusion_matrix_comparison(predictions_by_model, y_true, labels):
 
     plt.tight_layout()
     plt.show
+
+
+def plot_knn_curve(grid, param_name="knn__n_neighbors", ax=None):
+
+    results = grid.cv_results_
+    df = pd.DataFrame({
+        param_name: [p[param_name] for p in results["parameters"]],
+        "score": results["mean_test_score"],
+    })
+
+    df = df.groupby(param_name, as_index=False)["score"].mean()
+
+    ax.plot(df[param_name], df["score"], marker="o")
+    ax.set_xlabel(param_name.split("__")[-1])
+    ax.set_ylabel("Mean CV accuracy")
+    ax.set_title("K-NN")
+
+
+
+def plot_hyperparameter_comparison(grid, param_name):
+    pass

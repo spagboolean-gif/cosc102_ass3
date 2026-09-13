@@ -205,7 +205,7 @@ def plot_grid_heatmap(grid, param1, param2, title, ax=None):
     }).dropna()
 
     pivot = df.pivot(index=param1, columns=param2, values="score")
-    im = ax.imshow(pivot.values, cmap="plasma", aspect="auto")
+    im = ax.imshow(pivot.values, cmap="viridis", aspect="auto")
     ax.set_xticks(range(len(pivot.columns)))
     ax.set_xticklabels(pivot.columns, rotation=45)
     ax.set_yticks(range(len(pivot.index)))

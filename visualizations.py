@@ -174,7 +174,7 @@ def plot_hyperparameter_comparison(knn_grid, svc_grid, rforest_grid):
         X_scaled = estimator.named_steps["scaler"].transform(X)
         X_2d = PCA(n_components=2).fit_transform(X_scaled)
 
-        correct == (y.values == y_prediction)
+        correct = (y.values == y_prediction)
 
         fig, ax = plt.subplots(figsize=(9,7))
         for label in sorted(y.unique()):

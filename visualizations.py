@@ -7,6 +7,9 @@ uses data output from models defined in knn.py, svc.py and rforest.py
 """
 import numpy as np
 import pandas as pd
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import StandardScaler
+from sklearn.svm import SVC
 from sklearn.metrics import ConfusionMatrixDisplay
 import matplotlib.pyplot as plt
 
@@ -110,6 +113,76 @@ def plot_knn_curve(grid, param_name="knn__n_neighbors", ax=None):
     ax.set_ylabel("Mean CV accuracy")
     ax.set_title("K-NN")
 
+
+def plot_svc_decision_boundary(feature_df):
+    """
+    Plot an SVC decision boundary using two selected features.
+
+    Params:
+        feature_df: DataFrame containing features and activity labels.
+
+    Returns:
+        tuple: Matplotlib figure and axes containing the plot.
+    """
+    feature_names = ["accel_sma", "gyro_sma"]
+
+    X = feature_df[feature_names]
+    y = feature_df["label"]
+    model = Pipeline([
+        ("scaler", StandardScaler()),
+        ("svc", SVC(kernel="rbf", C=100, gamma=0.001))
+    ])
+
+    model.fit(X, y)
+
+    x_min = X[feature_names[0]].min()
+    x_max = X[feature_names[0]].max()
+    y_min = X[feature_names[1]].min()
+    y_max = X[feature_names[1]].max()
+
+    xx, yy = np.meshgrid(
+        np.linspace(x_min, x_max, 300),
+        np.linspace(y_min, y_max, 300)
+    )
+
+    grid = pd.DataFrame({
+        feature_names[0]: xx.ravel(),
+        feature_names[1]: yy.ravel()
+    })
+
+    predictions = model.predict(grid)
+
+    labels = sorted(y.unique())
+    label_numbers = {
+        label: index for index, label in enumerate(labels)
+    }
+
+    prediction_numbers = np.array([
+        label_numbers[label] for label in predictions
+    ]).reshape(xx.shape)
+
+    fig, ax = plt.subplots(figsize=(10, 7))
+    ax.contourf(xx, yy, prediction_numbers, alpha=0.25)
+
+    for activity in labels:
+        activity_data = feature_df[
+            feature_df["label"] == activity
+        ]
+
+        ax.scatter(
+            activity_data[feature_names[0]],
+            activity_data[feature_names[1]],
+            label=activity,
+            alpha=0.7
+        )
+
+    ax.set_xlabel("Acceleration SMA")
+    ax.set_ylabel("Gyroscope SMA")
+    ax.set_title("Illustrative SVC Decision Regions Using Two Features")
+    ax.legend()
+    plt.tight_layout()
+    plt.show()
+    return fig, ax
 
 
 def plot_grid_heatmap(grid, param1, param2, title, ax=None):

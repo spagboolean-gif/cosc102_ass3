@@ -10,7 +10,54 @@ import pandas as pd
 from sklearn.metrics import ConfusionMatrixDisplay
 import matplotlib.pyplot as plt
 
+def plot_activity_alignment(imu_df, annotations_df, start_sec=None, end_sec=None):
+    """
+    Plot IMU data and activity transitions to check alignment.
 
+    Params:
+        imu_df: Aligned IMU data.
+        annotations_df: Activity annotations produced by load_annotations().
+        start_sec: Optional start time for the plot.
+        end_sec: Optional end time for the plot.
+
+    Returns:
+        tuple: Matplotlib figure and axes containing the plot.
+    """
+    imu_data = imu_df.copy()
+    annotations = annotations_df.copy()
+
+    duration = (imu_data["timestamp"].max() - imu_data["timestamp"].min())
+    imu_data["time_sec"] = np.linspace(0, duration, len(imu_data))
+
+    if start_sec is not None:
+        imu_data = imu_data[imu_data["time_sec"] >= start_sec]
+        annotations = annotations[
+            annotations["start_time_sec"] >= start_sec
+        ]
+
+    if end_sec is not None:
+        imu_data = imu_data[imu_data["time_sec"] <= end_sec]
+        annotations = annotations[
+            annotations["start_time_sec"] <= end_sec
+        ]
+
+    fig, ax = plt.subplots(figsize=(14, 7))
+
+    ax.plot(imu_data["time_sec"], imu_data["accel_x"], label="Accel X")
+    ax.plot(imu_data["time_sec"], imu_data["accel_y"], label="Accel Y")
+    ax.plot(imu_data["time_sec"], imu_data["accel_z"], label="Accel Z")
+
+    for transition_time in annotations["start_time_sec"]:
+        ax.axvline(transition_time, color="black", linestyle="--")
+
+    ax.set_xlabel("Time (seconds)")
+    ax.set_ylabel("Acceleration")
+    ax.set_title("IMU Data and Activity Transitions")
+    ax.legend()
+
+    plt.tight_layout()
+    plt.show()
+    return fig, ax
 
 def  plot_confusion_matrix_comparison(predictions_by_model, y_true, labels):
     """
@@ -27,12 +74,16 @@ def  plot_confusion_matrix_comparison(predictions_by_model, y_true, labels):
 
     for ax, (title, y_pred) in zip(axes, predictions_by_model.items()):
         ConfusionMatrixDisplay.from_predictions(
-            y_true, y_pred, labels=labels, cmap=plt.cm.Blues, ax=ax, xticks_rotation=45, colorbar=False
+            y_true, y_pred,
+            labels=labels,
+            cmap=plt.cm.Blues,
+            ax=ax, xticks_rotation=45,
+            colorbar=False
         )
         ax.set_title(title)
 
     plt.tight_layout()
-    plt.show
+    plt.show()
 
 
 def plot_knn_curve(grid, param_name="knn__n_neighbors", ax=None):

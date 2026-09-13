@@ -50,6 +50,8 @@ def load_annotations(path="a3_activity_annotations.csv"):
 # put this here just in case - do we want values in the raw counts or g/dps?
 ACCEL_SCALE_G = 8 / 32768
 GYRO_SCALE_DPS = 8000 / 32768
+VIDEO_OFFSET_SEC = 8.0                  # Video starts about 8 seconds after the IMU recording
+VIDEO_DURATION_SEC = 11 * 60 + 51       # Video duration is 11 minutes 51 seconds
 
 def to_physical_units(imu_df):
     df = imu_df.copy()
@@ -57,22 +59,44 @@ def to_physical_units(imu_df):
     df[["gyro_x", "gyro_y", "gyro_z"]] *= GYRO_SCALE_DPS
     return df
 
+def align_annotations_to_imu(imu_df,annotations_df,
+                             video_offset_sec=VIDEO_OFFSET_SEC,
+                             video_duration_sec=VIDEO_DURATION_SEC):
+    """
+    Align activity annotations with the IMU data.
 
+    Params:
+        imu_df: Raw IMU dataset.
+        annotations_df: Activity annotations from the video.
+        video_offset_sec: Time between the IMU and video start.
+        video_duration_sec: Duration of the video in seconds.
 
-
-# Assign activity label to each IMU sample
-
-def align_annotations_to_imu(imu_df, annotations_df):
-
+    Returns:
+        DataFrame: IMU data aligned with activity labels.
+    """
     imu_df = imu_df.sort_values("timestamp").reset_index(drop=True)
     imu_df["timestamp"] = imu_df["timestamp"].astype("float64")
+
     imu_start = imu_df["timestamp"].min()
+    video_start = imu_start + video_offset_sec
+    video_end = video_start + video_duration_sec
+
+    imu_df = imu_df[
+        (imu_df["timestamp"] >= video_start)
+        & (imu_df["timestamp"] <= video_end)].copy()
 
     annotations_df = annotations_df.copy()
-    annotations_df["timestamp"] = (imu_start + annotations_df["start_time_sec"]).astype("float64")
-    annotations_df = annotations_df.sort_values("timestamp").reset_index(drop=True)
+    annotations_df["timestamp"] = (
+        video_start + annotations_df["start_time_sec"]).astype("float64")
+    annotations_df = annotations_df.sort_values(
+        "timestamp").reset_index(drop=True)
 
-    return pd.merge_asof(imu_df, annotations_df[["timestamp", "label"]], on="timestamp", direction="backward")
+    return pd.merge_asof(
+        imu_df,
+        annotations_df[["timestamp", "label"]],
+        on="timestamp",
+        direction="backward"
+    )
 
 
 

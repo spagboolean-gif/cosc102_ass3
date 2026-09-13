@@ -214,7 +214,6 @@ def plot_grid_heatmap(grid, param1, param2, title, ax=None):
     ax.set_ylabel(param1.split("__")[-1])
     ax.set_title(title)
 
-    #annotate each cell with its score : this seems a retarded way to do this but idk how else and it works so its fine I guess
     for i in range(len(pivot.index)):
         for j in range(len(pivot.columns)):
             val = pivot.values[i, j]

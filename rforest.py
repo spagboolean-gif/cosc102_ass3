@@ -1,5 +1,7 @@
 from preprocessing import get_features_and_labels, get_cv_splitter
 import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.preprocessing import StandardScaler
 from sklearn.pipeline import Pipeline
@@ -51,7 +53,9 @@ def train_rforest(X, y, cv=None, param_grid=None):
 
     grid.fit(X, y)
 
-    return{"best_estimator":grid.best_estimator_,
+    return{"estimators": grid.best_estimator_.named_steps["rforest"].estimators_,
+           "feature_importances": grid.best_estimator_.named_steps["rforest"].feature_importances_,
+           "best_estimator":grid.best_estimator_,
            "best_parameters":grid.best_params_,
            "best_score":grid.best_score_,
            "grid":grid}
@@ -70,6 +74,16 @@ def rforest_summary(results, X, y, cv=None):
     print(f"Classification Report Summary: \n{classification_report(y,y_prediction)}\n\
         Confusion Matrix: \n\
         {confusion_matrix(y,y_prediction)}")
+
+    importances = results["feature_importances"]
+    std = np.std([tree.feature_importances_ for tree in results["estimators"]], axis=0)
+
+    forest_importances = pd.Series(importances, index=X.columns)
+    fig, ax = plt.subplots()
+    forest_importances.plot.bar(yerr=std, ax=ax)
+    ax.set_title("Feature importances for Random Forest")
+    ax.set_ylabel("Mean decrease in impurity")
+    fig.tight_layout()
 
     return {
         "predictions": y_prediction,

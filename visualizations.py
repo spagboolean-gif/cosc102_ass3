@@ -8,6 +8,7 @@ uses data output from models defined in knn.py, svc.py and rforest.py
 import numpy as np
 import pandas as pd
 from sklearn.metrics import ConfusionMatrixDisplay
+from sklearn.decomposition import PCA
 import matplotlib.pyplot as plt
 
 def plot_activity_alignment(imu_df, annotations_df, start_sec=None, end_sec=None):
@@ -162,3 +163,31 @@ def plot_hyperparameter_comparison(knn_grid, svc_grid, rforest_grid):
 
     plt.tight_layout()
     plt.show()
+
+
+    def plot_knn_pca(estimator, X, y, y_prediction, title="K-NN PCA projection"):
+        """
+        PCA plot of scaled feature space with plot points coloured by their activity label, misclassified points marked with an X
+
+        """
+
+        X_scaled = estimator.named_steps["scaler"].transform(X)
+        X_2d = PCA(n_components=2).fit_transform(X_scaled)
+
+        correct == (y.values == y_prediction)
+
+        fig, ax = plt.subplots(figsize=(9,7))
+        for label in sorted(y.unique()):
+            mask = (y.values == label)
+            ax.scatter(X_2d[mask & correct, 0], X_2d[mask & correct, 1], 
+                       label=label, alpha=0.6, s=25)
+
+        # overlay misclassified points as X markers
+        ax.scatter(X_2d[~correct, 0], X_2d[~correct, 1], marker="x", color="black", s=40, 
+                    label="misclassified")
+
+        ax.set_xlabel("PCA component 1")
+        ax.set_ylabel("PCA component 2")
+        ax.legend()
+        plt.tight_layout()
+        plt.show()
